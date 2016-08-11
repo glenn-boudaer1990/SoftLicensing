@@ -46,15 +46,20 @@ public class NewMain {
 	public void writeLicense() throws Exception {
 		Signature rsaSignature = Signature.getInstance("SHA1withRSA");
 		PrivateKey privateKey = null;
+		
 		byte[] privateKeyBytes = FileUtils.readFileToByteArray(new File("C:/license/privkey.der"));
-		if (privateKeyBytes != null) {
+		
+		if (privateKeyBytes != null) 
+		{
 			PKCS8EncodedKeySpec privateSpec = new PKCS8EncodedKeySpec(privateKeyBytes);
 			KeyFactory privateKeyFactory = KeyFactory.getInstance("RSA");
 			privateKey = privateKeyFactory.generatePrivate(privateSpec);
 		}
+		
 		rsaSignature.initSign(privateKey);
 		rsaSignature.update(FileUtils.readFileToByteArray(new File("C:/license/lic.file")));
 		byte[] signature = rsaSignature.sign();
+		
 		FileUtils.writeByteArrayToFile(new File("C:/license/signature.file"), signature);
 	}
 }

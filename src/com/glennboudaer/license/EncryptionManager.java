@@ -11,8 +11,11 @@ import com.glennboudaer.enums.KeyStatus;
 public class EncryptionManager {
 
     private static EncryptionManager instance;
-    private static final String PUBLIC_KEY_FILE = "/License/public_key.der";
-    private static final String PRIVATE_KEY_FILE = "/path/to/your/private_key.der";
+    private static final String PUBLIC_KEY_FILE = "/Users/glennboudaer/Documents/pubkey.der";
+    private static final String PRIVATE_KEY_FILE = "/Users/glennboudaer/Documents/privkey.der";
+	public static final String HASH_FILENAME = "license.sha1";
+	public static final String SIGNATURE_FILENAME = "license.sig";
+	
     private static PublicKey publicKey;
     private static PrivateKey privateKey;
 
@@ -153,11 +156,11 @@ public class EncryptionManager {
         byte[] sig = rsaSignature.sign();
 
         // save the signature to disk to verify later
-        FileOutputStream fos = new FileOutputStream(signatureFilePath);
+        FileOutputStream fos = new FileOutputStream(signatureFilePath + "/" + SIGNATURE_FILENAME);
         fos.write(sig);
         fos.close();
         
-        fos = new FileOutputStream(hashFilePath);
+        fos = new FileOutputStream(hashFilePath + "/" + HASH_FILENAME);
         fos.write(dataToSign);
         fos.close();
     }

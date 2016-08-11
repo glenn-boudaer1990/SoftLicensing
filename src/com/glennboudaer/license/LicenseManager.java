@@ -35,14 +35,15 @@ public class LicenseManager
 	public static final String SIGNATURE_FILENAME = "license.sig";
 
 	private static final int KEY_LEN = 62;
-	private static final byte[] def = new byte[]
-	{ 24, 4, 124, 10, 91 };
+	private static final byte[] def = new byte[] { 24, 4, 124, 10, 91 };
 	private static final byte[][] params = new byte[][]
 	{
 			{ 24, 4, 127 },
 			{ 10, 0, 56 },
 			{ 1, 2, 91 },
-			{ 7, 1, 100 } };
+			{ 7, 1, 100 } 
+	};
+	
 	private static final Set<String> blacklist = new TreeSet<String>();
 
 	private Timer t;
@@ -76,7 +77,8 @@ public class LicenseManager
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(path + LICENSE_FILENAME)));
 			oos.writeObject(lic);
 			oos.close();
-		} catch (Exception ex)
+		} 
+		catch (Exception ex)
 		{
 		}
 	}
@@ -89,8 +91,8 @@ public class LicenseManager
 			// this will remove changes of faking a LICENSE file
 			// the LICENSE file has to be signed with our key
 			File licenseFile = new File(licensePath);
-			File signatureFile = new File(signaturePath);
-			File hashFile = new File(hashPath);
+			File signatureFile = new File(signaturePath + "/" + SIGNATURE_FILENAME);
+			File hashFile = new File(hashPath + "/" + HASH_FILENAME);
 
 			KeyStatus status = EncryptionManager.getEncryptionManager().verify(licenseFile, signatureFile, hashFile);
 
@@ -155,12 +157,13 @@ public class LicenseManager
 			MessageDigest digest = MessageDigest.getInstance("SHA-512");
 			digest.reset();
 			entropy = digest.digest(getByteArrayFromHexString(authCode));
-		} catch (NoSuchAlgorithmException ex)
+		} 
+		catch (NoSuchAlgorithmException ex)
 		{
-			/* this will never happen */ }
+			/* this will never happen */ 
+		}
 
-		License lic = new License(name, email, LicenseManager.makeKey(ENTROPY, entropy), expiration, licenseType,
-				version);
+		License lic = new License(name, email, LicenseManager.makeKey(ENTROPY, entropy), expiration, licenseType, version);
 		writeLicenseFile(lic, path);
 	}
 
@@ -246,12 +249,6 @@ public class LicenseManager
 		return intToHex(sum, 4);
 	}
 
-	/**
-	 * 
-	 * @param seed
-	 * @param entropy
-	 * @return
-	 */
 	public static String makeKey(final int seed, byte[] entropy)
 	{
 		// fill keyBytes with values derived from seed.
@@ -283,11 +280,6 @@ public class LicenseManager
 		return key;
 	}
 
-	/**
-	 * 
-	 * @param key
-	 * @return
-	 */
 	private static boolean validateKeyChecksum(final String key)
 	{
 		if (key.length() != KEY_LEN)
@@ -300,18 +292,10 @@ public class LicenseManager
 		return checksum.equals(getChecksum(key.substring(0, KEY_LEN - 4)));
 	}
 
-	/**
-	 * 
-	 * @param key
-	 * @return
-	 */
 	public static KeyStatus checkKey(final String key)
 	{
 		if (!validateKeyChecksum(key))
-		{
-			return KeyStatus.KEY_INVALID; // bad checksum or wrong number of
-			// characters
-		}
+			return KeyStatus.KEY_INVALID;
 
 		// test against blacklist
 		for (String bl : blacklist)
@@ -344,7 +328,8 @@ public class LicenseManager
 		try
 		{
 			seed = Integer.valueOf(key.substring(0, 8), 16);
-		} catch (NumberFormatException e)
+		} 
+		catch (NumberFormatException e)
 		{
 			return KeyStatus.KEY_PHONY;
 		}
@@ -352,26 +337,23 @@ public class LicenseManager
 		// test key 0
 		final String kb0 = key.substring(8, 10);
 		final byte b0 = getKeyByte(seed, params[0][0], params[0][1], params[0][2]);
+		
 		if (!kb0.equals(intToHex(b0, 2)))
-		{
 			return KeyStatus.KEY_PHONY;
-		}
 
 		// test key1
 		final String kb1 = key.substring(10, 12);
 		final byte b1 = getKeyByte(seed, params[1][0], params[1][1], params[1][2]);
+		
 		if (!kb1.equals(intToHex(b1, 2)))
-		{
 			return KeyStatus.KEY_PHONY;
-		}
 
 		// test key2
 		final String kb2 = key.substring(12, 14);
 		final byte b2 = getKeyByte(seed, params[2][0], params[2][1], params[2][2]);
+		
 		if (!kb2.equals(intToHex(b2, 2)))
-		{
 			return KeyStatus.KEY_PHONY;
-		}
 
 		// test key3
 		final String kb3 = key.substring(14, 16);
@@ -398,29 +380,18 @@ public class LicenseManager
 		return KeyStatus.KEY_GOOD;
 	}
 
-	/**
-	 * 
-	 * @param n
-	 * @param chars
-	 * @return
-	 */
 	protected static String intToHex(final Number n, final int chars)
 	{
 		return String.format("%0" + chars + "x", n);
 	}
 
-	/**
-	 * 
-	 * @param raw
-	 * @return
-	 */
 	public static String getHexStringFromBytes(byte[] raw)
 	{
 		if (raw == null)
-		{
 			return null;
-		}
+
 		final StringBuilder hex = new StringBuilder(2 * raw.length);
+
 		for (final byte b : raw)
 		{
 			hex.append(HEXES.charAt((b & 0xF0) >> 4)).append(HEXES.charAt((b & 0x0F)));
@@ -429,11 +400,6 @@ public class LicenseManager
 		return hex.toString();
 	}
 
-	/**
-	 * 
-	 * @param s
-	 * @return
-	 */
 	public static byte[] getByteArrayFromHexString(String s)
 	{
 		int len = s.length();
@@ -447,10 +413,6 @@ public class LicenseManager
 
 	private class CheckLicenseTask extends TimerTask
 	{
-		public CheckLicenseTask()
-		{
-		}
-
 		@Override
 		public void run()
 		{
